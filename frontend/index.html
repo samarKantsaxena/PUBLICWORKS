@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBLICWORKS – Fix Your Neighbourhood</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #f4f7fc; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; color: #1e2a3e; }
+        #map { height: 420px; border-radius: 20px; margin: 20px 0; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .issue-card { transition: 0.2s; cursor: pointer; border: none; border-radius: 16px; overflow: hidden; }
+        .issue-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .footer { background: white; border-top: 1px solid #e2e8f0; padding: 2rem 0; margin-top: 3rem; }
+        .coffee-btn { background: #ffdd00; color: #1e2a3e; border: none; border-radius: 40px; padding: 8px 20px; font-weight: 600; transition: 0.2s; }
+        .coffee-btn:hover { background: #f5c400; transform: scale(0.98); }
+        .badge-cat { background: #e9ecef; color: #1e2a3e; font-size: 0.7rem; border-radius: 40px; padding: 4px 12px; }
+        .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 40px; }
+        .status-reported { background: #dc2626; color: white; }
+        .status-progress { background: #f59e0b; color: white; }
+        .status-resolved { background: #10b981; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+    <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+    <!-- Dashboard link (visible only when logged in) -->
+    <li class="nav-item" id="dashboardNav" style="display: none;"><a id="dashboardLink" class="nav-link" href="#">Dashboard</a></li>
+    <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+    <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+    <li class="nav-item" id="userGreetingNav" style="display:none;"><span class="nav-link">👋</span></li>
+    <li class="nav-item" id="logoutNav" style="display:none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+</ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="text-center my-4">
+        <h1 class="display-5 fw-bold">Report. Track. Fix.</h1>
+        <p class="lead text-secondary">Citizens report issues, NGOs and authorities resolve them.</p>
+    </div>
+    <div id="map"></div>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <h3 class="h4">📋 Recent Issues</h3>
+        <a href="citizen/dashboard.html" class="btn btn-warning rounded-pill"><i class="bi bi-plus-lg"></i> Report an Issue</a>
+    </div>
+    <div id="recentIssues" class="row g-4 mt-2">Loading issues...</div>
+</div>
+
+<footer class="footer">
+    <div class="container text-center">
+        <button id="coffeeButton" class="coffee-btn"><i class="bi bi-cup-hot-fill"></i> Buy Me a Coffee</button>
+        <p class="text-muted small mt-3">PUBLICWORKS – Building accountable communities</p>
+    </div>
+</footer>
+
+<script>
+    // ========== CONFIGURATION (REPLACE WITH YOUR ACTUAL VALUES) ==========
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    // ====================================================================
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let map;
+
+    function initMap() {
+        // Initialize map only once
+        if (map) return;
+        map = L.map('map').setView([20.5937, 78.9629], 5);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+        }).addTo(map);
+    }
+
+    async function loadIssues() {
+        try {
+            const { data, error } = await supabaseClient.from('issues').select('*').order('created_at', { ascending: false }).limit(12);
+            if (error) throw error;
+            const container = document.getElementById('recentIssues');
+            container.innerHTML = '';
+            if (!data.length) {
+                container.innerHTML = '<p class="text-muted">No issues reported yet. Be the first!</p>';
+                return;
+            }
+            data.forEach(issue => {
+                let statusClass = issue.status === 'reported' ? 'status-reported' : (issue.status === 'in_progress' ? 'status-progress' : 'status-resolved');
+                let statusText = issue.status === 'reported' ? 'Reported' : (issue.status === 'in_progress' ? 'In Progress' : 'Resolved');
+                container.innerHTML += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card issue-card h-100 shadow-sm" onclick="window.location.href='issue.html?id=${issue.id}'">
+                            ${issue.image_url ? `<img src="${issue.image_url}" class="card-img-top" style="height: 160px; object-fit: cover;">` : '<div class="card-img-top bg-light text-center py-5"><i class="bi bi-image fs-1 text-muted"></i></div>'}
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="card-title">${escapeHtml(issue.title)}</h6>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                                <p class="card-text small text-secondary mt-2">${escapeHtml(issue.description?.substring(0, 80)) || ''}...</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="badge-cat"><i class="bi bi-tag"></i> ${escapeHtml(issue.category || 'uncategorized')}</span>
+                                    <span><i class="bi bi-hand-thumbs-up"></i> ${issue.upvotes || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                // Add marker to map – but ensure map exists
+                if (issue.latitude && issue.longitude) {
+                    initMap(); // ensures map is created before adding markers
+                    L.marker([issue.latitude, issue.longitude])
+                        .addTo(map)
+                        .bindPopup(`<b>${escapeHtml(issue.title)}</b><br>${escapeHtml(issue.description?.substring(0, 100))}<br><a href="issue.html?id=${issue.id}">Details</a>`);
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            document.getElementById('recentIssues').innerHTML = '<p class="text-danger">Failed to load issues.</p>';
+        }
+    }
+
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]) || ''; }
+
+    document.getElementById('coffeeButton').addEventListener('click', () => { alert('☕ Buy Me a Coffee – link will be added later!'); });
+
+    // Initialize map and load issues
+    initMap();
+    loadIssues();
+    document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const loginNav = document.getElementById('loginNav');
+    const signupNav = document.getElementById('signupNav');
+    const userGreeting = document.getElementById('userGreetingNav');
+    const logoutNav = document.getElementById('logoutNav');
+    const logoutBtn = document.getElementById('logoutBtnHeader');
+    const dashboardNav = document.getElementById('dashboardNav');
+    const dashboardLink = document.getElementById('dashboardLink');
+
+    if (user) {
+        // Fetch user profile (role and name)
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+        const fullName = profile?.full_name || 'User';
+        const role = profile?.role;
+
+        // Set dashboard link based on role
+        if (dashboardLink) {
+            if (role === 'citizen') {
+                dashboardLink.href = '/citizen/dashboard.html';
+            } else if (role === 'ngo') {
+                dashboardLink.href = '/ngo/dashboard.html';
+            }
+        }
+        if (dashboardNav) dashboardNav.style.display = 'block';
+
+        // Hide login/signup, show greeting and logout
+        if (loginNav) loginNav.style.display = 'none';
+        if (signupNav) signupNav.style.display = 'none';
+        if (userGreeting) {
+            userGreeting.style.display = 'block';
+            const span = userGreeting.querySelector('.nav-link');
+            if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+        }
+        if (logoutNav) {
+            logoutNav.style.display = 'block';
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await supabaseClient.auth.signOut();
+                    window.location.href = '/';
+                });
+            }
+        }
+    } else {
+        // Not logged in: hide dashboard, show login/signup
+        if (dashboardNav) dashboardNav.style.display = 'none';
+        if (loginNav) loginNav.style.display = 'block';
+        if (signupNav) signupNav.style.display = 'block';
+        if (userGreeting) userGreeting.style.display = 'none';
+        if (logoutNav) logoutNav.style.display = 'none';
+    }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Issue Details – PUBLICWORKS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f8fafc; }
+        .card { border: none; border-radius: 16px; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+    <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+    <!-- Dashboard link (visible only when logged in) -->
+    <li class="nav-item" id="dashboardNav" style="display: none;"><a id="dashboardLink" class="nav-link" href="#">Dashboard</a></li>
+    <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+    <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+    <li class="nav-item" id="userGreetingNav" style="display:none;"><span class="nav-link">👋</span></li>
+    <li class="nav-item" id="logoutNav" style="display:none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+</ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div id="issueDetail">Loading...</div>
+    <hr>
+    <h5>Comments</h5>
+    <div id="comments"></div>
+    <div id="commentForm" style="display: none;">
+        <textarea id="commentText" class="form-control" rows="2" placeholder="Add a comment..."></textarea>
+        <button id="postComment" class="btn btn-primary mt-2">Post Comment</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const issueId = urlParams.get('id');
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    const BACKEND_URL = "http://127.0.0.1:5000";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentToken = null;
+
+    async function loadIssue() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        currentToken = session?.access_token;
+        const { data: issue } = await supabaseClient.from('issues').select('*').eq('id', issueId).single();
+        document.getElementById('issueDetail').innerHTML = `
+            <h2>${escapeHtml(issue.title)}</h2>
+            <p>${escapeHtml(issue.description)}</p>
+            <p><strong>Status:</strong> ${issue.status} | <strong>Upvotes:</strong> <span id="upvoteCount">${issue.upvotes}</span> | <strong>Category:</strong> ${issue.category}</p>
+            ${issue.image_url ? `<img src="${issue.image_url}" class="img-fluid rounded mb-3" style="max-height: 300px;">` : ''}
+            <a href="https://maps.google.com/?q=${issue.latitude},${issue.longitude}" target="_blank" class="btn btn-sm btn-secondary"><i class="bi bi-map"></i> View on Map</a>
+            <button id="upvoteBtn" class="btn btn-sm btn-outline-success ms-2"><i class="bi bi-hand-thumbs-up"></i> Upvote</button>
+        `;
+        document.getElementById('upvoteBtn')?.addEventListener('click', async () => {
+            if (!currentToken) { alert('Please log in to upvote'); return; }
+            const response = await fetch(`${BACKEND_URL}/issues/${issueId}/upvote`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+            const result = await response.json();
+            if (result.success) document.getElementById('upvoteCount').innerText = result.upvotes;
+            else alert('Error upvoting');
+        });
+        const commentsRes = await fetch(`${BACKEND_URL}/issues/${issueId}/comments`);
+        const comments = await commentsRes.json();
+        document.getElementById('comments').innerHTML = comments.map(c => `<div class="card mb-2 p-2">${escapeHtml(c.comment)}</div>`).join('');
+        const user = await supabaseClient.auth.getUser();
+        if (user.data.user) document.getElementById('commentForm').style.display = 'block';
+    }
+
+    document.getElementById('postComment')?.addEventListener('click', async () => {
+        if (!currentToken) { alert('Please log in to comment'); return; }
+        const comment = document.getElementById('commentText').value;
+        if (!comment.trim()) return;
+        const response = await fetch(`${BACKEND_URL}/issues/${issueId}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` },
+            body: JSON.stringify({ comment })
+        });
+        if (response.ok) {
+            document.getElementById('commentText').value = '';
+            loadIssue();
+        } else {
+            alert('Failed to post comment');
+        }
+    });
+
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]) || ''; }
+
+    // Navbar logic
+    document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const loginNav = document.getElementById('loginNav');
+    const signupNav = document.getElementById('signupNav');
+    const userGreeting = document.getElementById('userGreetingNav');
+    const logoutNav = document.getElementById('logoutNav');
+    const logoutBtn = document.getElementById('logoutBtnHeader');
+    const dashboardNav = document.getElementById('dashboardNav');
+    const dashboardLink = document.getElementById('dashboardLink');
+
+    if (user) {
+        // Fetch user profile (role and name)
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+        const fullName = profile?.full_name || 'User';
+        const role = profile?.role;
+
+        // Set dashboard link based on role
+        if (dashboardLink) {
+            if (role === 'citizen') {
+                dashboardLink.href = '/citizen/dashboard.html';
+            } else if (role === 'ngo') {
+                dashboardLink.href = '/ngo/dashboard.html';
+            }
+        }
+        if (dashboardNav) dashboardNav.style.display = 'block';
+
+        // Hide login/signup, show greeting and logout
+        if (loginNav) loginNav.style.display = 'none';
+        if (signupNav) signupNav.style.display = 'none';
+        if (userGreeting) {
+            userGreeting.style.display = 'block';
+            const span = userGreeting.querySelector('.nav-link');
+            if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+        }
+        if (logoutNav) {
+            logoutNav.style.display = 'block';
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await supabaseClient.auth.signOut();
+                    window.location.href = '/';
+                });
+            }
+        }
+    } else {
+        // Not logged in: hide dashboard, show login/signup
+        if (dashboardNav) dashboardNav.style.display = 'none';
+        if (loginNav) loginNav.style.display = 'block';
+        if (signupNav) signupNav.style.display = 'block';
+        if (userGreeting) userGreeting.style.display = 'none';
+        if (logoutNav) logoutNav.style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>

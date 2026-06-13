@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service – PUBLICWORKS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #fef9e8; font-family: 'Segoe UI', sans-serif; }
+        .terms-container { max-width: 900px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; color: #1e2a3e; }
+        h1, h2 { color: #1e2a3e; }
+        h2 { font-size: 1.5rem; margin-top: 1.5rem; border-left: 4px solid #f39c12; padding-left: 1rem; }
+        .note { background: #eef2f5; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-style: italic; }
+        .footer-terms { background: #1e2a3e; color: #cbd5e1; padding: 1.5rem 0; margin-top: 2rem; text-align: center; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+           <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+    <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+    <!-- Dashboard link (visible only when logged in) -->
+    <li class="nav-item" id="dashboardNav" style="display: none;"><a id="dashboardLink" class="nav-link" href="#">Dashboard</a></li>
+    <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+    <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+    <li class="nav-item" id="userGreetingNav" style="display:none;"><span class="nav-link">👋</span></li>
+    <li class="nav-item" id="logoutNav" style="display:none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+</ul>
+        </div>
+    </div>
+</nav>
+
+<div class="terms-container">
+    <h1 class="text-center">Terms of Service</h1>
+    <div class="note">
+        <i class="bi bi-info-circle-fill"></i> <strong>Short & clear version</strong> – We believe legal terms should be readable. These are the full terms, but written for humans, not lawyers.
+    </div>
+
+    <h2>1. Who We Are</h2>
+    <p>PUBLICWORKS (referred to as "we", "us", or "the platform") is a civic technology platform that connects citizens, NGOs, and local authorities to report and resolve public infrastructure issues.</p>
+
+    <h2>2. What You Agree To</h2>
+    <p>By using PUBLICWORKS, you agree to:</p>
+    <ul>
+        <li><strong>Be honest</strong> – Only report real issues you have personally observed. Do not post fake, misleading, or harmful content.</li>
+        <li><strong>Respect others</strong> – Do not use the platform to harass, threaten, or defame any person or organisation.</li>
+        <li><strong>No spam or advertising</strong> – The platform is for civic issues only. Commercial ads or unrelated promotions are prohibited.</li>
+        <li><strong>Obey the law</strong> – You must follow all applicable local, state, and national laws when using PUBLICWORKS.</li>
+    </ul>
+
+    <h2>3. User Accounts</h2>
+    <p>You are responsible for keeping your login credentials secure. If you suspect unauthorised access, change your password immediately and contact us. One person may have only one active account. NGOs must provide valid registration details; impersonating an organisation is grounds for permanent ban.</p>
+
+    <h2>4. Reporting & Content Ownership</h2>
+    <p>When you upload a photo or description of an issue, you retain ownership of your content. However, you grant PUBLICWORKS a worldwide, royalty‑free licence to display, store, and share that content on our platform and social media channels for the purpose of resolving the issue. We will never sell your personal data or images to third parties.</p>
+
+    <h2>5. Role of NGOs & Authorities</h2>
+    <p>NGOs and government bodies that register on PUBLICWORKS confirm that they have the authority or capacity to address certain civic issues. Claiming an issue means you commit to updating its status in a timely manner. Failure to resolve or communicate progress may result in removal of claiming privileges.</p>
+
+    <h2>6. Limitation of Liability</h2>
+    <p>PUBLICWORKS provides a platform for communication and coordination. We are not directly responsible for fixing any physical issue. We do not guarantee that every reported problem will be resolved. We are not liable for any damages (vehicle damage, injury, etc.) that may occur before an issue is fixed. Our role is to facilitate, not to execute repairs.</p>
+
+    <h2>7. Privacy & Data</h2>
+    <p>We collect only the information needed to operate the platform: your name, email, location (only when you report an issue), and optional organisation details for NGOs. We do not sell or rent your data. You can request deletion of your account and all associated data at any time by emailing <strong>privacy@publicworks.org</strong> (placeholder – you can use your own email).</p>
+
+    <h2>8. Termination</h2>
+    <p>We reserve the right to suspend or terminate accounts that violate these terms, post false reports, or engage in abusive behaviour. You may delete your account at any time from your profile settings.</p>
+
+    <h2>9. Changes to These Terms</h2>
+    <p>We may update these terms occasionally. Significant changes will be announced on the platform or via email. Continued use after changes constitutes acceptance of the new terms.</p>
+
+    <h2>10. Contact Us</h2>
+    <p>For questions, complaints, or data requests: <strong>legal@publicworks.org</strong> (replace with your actual contact). We aim to respond within 7 business days.</p>
+
+    <div class="note mt-4">
+        <i class="bi bi-check-circle-fill text-success"></i> These terms are effective as of <strong>June 12, 2025</strong>. Thank you for using PUBLICWORKS – together we fix neighbourhoods.
+    </div>
+</div>
+
+<footer class="footer-terms">
+    <div class="container">
+        <p>&copy; 2025 PUBLICWORKS – Transparency & Accountability</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS Bundle (needed for navbar toggler) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Supabase configuration (using your actual credentials)
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const loginNav = document.getElementById('loginNav');
+    const signupNav = document.getElementById('signupNav');
+    const userGreeting = document.getElementById('userGreetingNav');
+    const logoutNav = document.getElementById('logoutNav');
+    const logoutBtn = document.getElementById('logoutBtnHeader');
+    const dashboardNav = document.getElementById('dashboardNav');
+    const dashboardLink = document.getElementById('dashboardLink');
+
+    if (user) {
+        // Fetch user profile (role and name)
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+        const fullName = profile?.full_name || 'User';
+        const role = profile?.role;
+
+        // Set dashboard link based on role
+        if (dashboardLink) {
+            if (role === 'citizen') {
+                dashboardLink.href = '/citizen/dashboard.html';
+            } else if (role === 'ngo') {
+                dashboardLink.href = '/ngo/dashboard.html';
+            }
+        }
+        if (dashboardNav) dashboardNav.style.display = 'block';
+
+        // Hide login/signup, show greeting and logout
+        if (loginNav) loginNav.style.display = 'none';
+        if (signupNav) signupNav.style.display = 'none';
+        if (userGreeting) {
+            userGreeting.style.display = 'block';
+            const span = userGreeting.querySelector('.nav-link');
+            if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+        }
+        if (logoutNav) {
+            logoutNav.style.display = 'block';
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await supabaseClient.auth.signOut();
+                    window.location.href = '/';
+                });
+            }
+        }
+    } else {
+        // Not logged in: hide dashboard, show login/signup
+        if (dashboardNav) dashboardNav.style.display = 'none';
+        if (loginNav) loginNav.style.display = 'block';
+        if (signupNav) signupNav.style.display = 'block';
+        if (userGreeting) userGreeting.style.display = 'none';
+        if (logoutNav) logoutNav.style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up – PUBLICWORKS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #f4f7fc; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; color: #1e2a3e; }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; color: #1e2a3e; }
+        .card { border: none; border-radius: 24px; background: white; }
+        .btn-warning { border-radius: 40px; padding: 10px; font-weight: 600; }
+        .footer { background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 0; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+                <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+                <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+                <li class="nav-item" id="userGreetingNav" style="display: none;"><span class="nav-link">👋</span></li>
+                <li class="nav-item" id="logoutNav" style="display: none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card shadow-sm mx-auto p-4" style="max-width: 500px; margin-top: 3rem;">
+        <h3 class="text-center mb-4"><i class="bi bi-person-plus-fill"></i> Create Account</h3>
+        <form id="signupForm">
+            <div class="mb-3">
+                <label class="form-label">I am a...</label>
+                <select id="role" class="form-select">
+                    <option value="citizen">Citizen</option>
+                    <option value="ngo">NGO / Authority</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="fullName" class="form-control" required>
+            </div>
+            <div id="ngoFields" style="display: none;">
+                <div class="mb-3"><label class="form-label">Organization Name</label><input type="text" id="orgName" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Registration Number</label><input type="text" id="regNo" class="form-control"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-warning w-100">Sign Up</button>
+        </form>
+        <div class="text-center mt-3"><a href="login.html">Already have an account? Login</a></div>
+        <div id="errorMsg" class="text-danger mt-2 small text-center"></div>
+    </div>
+</div>
+
+<footer class="footer text-center">
+    <div class="container"><p class="text-muted small">PUBLICWORKS – Building accountable communities</p></div>
+</footer>
+
+<script>
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const errorDiv = document.getElementById('errorMsg');
+
+    document.getElementById('role').addEventListener('change', function() {
+        document.getElementById('ngoFields').style.display = this.value === 'ngo' ? 'block' : 'none';
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorDiv.innerText = '';
+        const role = document.getElementById('role').value;
+        const fullName = document.getElementById('fullName').value;
+        const orgName = document.getElementById('orgName').value;
+        const regNo = document.getElementById('regNo').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: fullName, role } }
+        });
+        if (authError) {
+            errorDiv.innerText = authError.message;
+            return;
+        }
+        const userId = authData.user?.id;
+        if (!userId) {
+            errorDiv.innerText = 'User created but no ID. Disable email confirmation in Supabase settings.';
+            return;
+        }
+        const profileData = { id: userId, role, full_name: fullName };
+        if (role === 'ngo') {
+            profileData.organization_name = orgName;
+            profileData.registration_number = regNo;
+        }
+        const { error: profileError } = await supabaseClient.from('profiles').insert(profileData);
+        if (profileError) {
+            errorDiv.innerText = profileError.message;
+            return;
+        }
+        alert('Account created! Please log in.');
+        window.location.href = 'login.html';
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const loginNav = document.getElementById('loginNav');
+        const signupNav = document.getElementById('signupNav');
+        const userGreeting = document.getElementById('userGreetingNav');
+        const logoutNav = document.getElementById('logoutNav');
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+
+        if (user) {
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('full_name')
+                .eq('id', user.id)
+                .single();
+            const fullName = profile?.full_name || 'User';
+            if (loginNav) loginNav.style.display = 'none';
+            if (signupNav) signupNav.style.display = 'none';
+            if (userGreeting) {
+                userGreeting.style.display = 'block';
+                const span = userGreeting.querySelector('.nav-link');
+                if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+            }
+            if (logoutNav) {
+                logoutNav.style.display = 'block';
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        window.location.href = '/';
+                    });
+                }
+            }
+        } else {
+            if (loginNav) loginNav.style.display = 'block';
+            if (signupNav) signupNav.style.display = 'block';
+            if (userGreeting) userGreeting.style.display = 'none';
+            if (logoutNav) logoutNav.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

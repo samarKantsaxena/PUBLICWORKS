@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGO Dashboard – PUBLICWORKS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+                <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+                <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+                <li class="nav-item" id="userGreetingNav" style="display:none;"><span class="nav-link">👋</span></li>
+                <li class="nav-item" id="logoutNav" style="display:none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm p-4">
+                <h4><i class="bi bi-exclamation-triangle"></i> Open Issues (unclaimed)</h4>
+                <div id="openIssues">Loading...</div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm p-4">
+                <h4><i class="bi bi-check-circle"></i> Issues I've Claimed</h4>
+                <div id="claimedIssues">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    const BACKEND_URL = "http://127.0.0.1:5000";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentToken = null;
+
+    async function loadData() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) {
+            window.location.href = '/login.html';
+            return;
+        }
+        // Get fresh token
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        currentToken = sessionData.session?.access_token;
+        if (!currentToken) {
+            document.getElementById('openIssues').innerHTML = '<p class="text-danger">Authentication failed. Please log in again.</p>';
+            return;
+        }
+
+        // Fetch all non-resolved issues
+        const { data: allIssues, error } = await supabaseClient
+            .from('issues')
+            .select('*')
+            .neq('status', 'resolved')
+            .order('created_at', { ascending: false });
+        if (error) {
+            console.error(error);
+            document.getElementById('openIssues').innerHTML = '<p class="text-danger">Failed to load issues.</p>';
+            return;
+        }
+        if (!allIssues || allIssues.length === 0) {
+            document.getElementById('openIssues').innerHTML = '<p class="text-muted">No open issues.</p>';
+            document.getElementById('claimedIssues').innerHTML = '<p class="text-muted">No issues claimed yet.</p>';
+            return;
+        }
+
+        const open = allIssues.filter(i => i.ngo_claimed_by !== user.id);
+        const claimed = allIssues.filter(i => i.ngo_claimed_by === user.id);
+
+        // Render open issues
+        if (open.length === 0) {
+            document.getElementById('openIssues').innerHTML = '<p class="text-muted">No unclaimed issues.</p>';
+        } else {
+            let openHtml = '';
+            open.forEach(issue => {
+                openHtml += `
+                    <div class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <b>${escapeHtml(issue.title)}</b>
+                            <span class="badge bg-secondary">${issue.upvotes} upvotes</span>
+                        </div>
+                        <p class="small text-muted mt-1">${escapeHtml(issue.description?.substring(0, 100))}</p>
+                        <button class="btn btn-sm btn-primary claim-btn" data-id="${issue.id}">Claim Issue</button>
+                    </div>
+                `;
+            });
+            document.getElementById('openIssues').innerHTML = openHtml;
+            // Attach claim event listeners
+            document.querySelectorAll('.claim-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const issueId = btn.dataset.id;
+                    const response = await fetch(`${BACKEND_URL}/issues/${issueId}/claim`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    });
+                    if (response.ok) {
+                        loadData(); // refresh
+                    } else {
+                        const err = await response.text();
+                        alert('Claim failed: ' + err);
+                    }
+                });
+            });
+        }
+
+        // Render claimed issues
+        if (claimed.length === 0) {
+            document.getElementById('claimedIssues').innerHTML = '<p class="text-muted">No issues claimed yet.</p>';
+        } else {
+            let claimedHtml = '';
+            claimed.forEach(issue => {
+                let statusBadge = issue.status === 'in_progress' ? 'bg-warning' : 'bg-success';
+                let statusText = issue.status === 'in_progress' ? 'In Progress' : 'Resolved';
+                claimedHtml += `
+                    <div class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <b>${escapeHtml(issue.title)}</b>
+                            <span class="badge ${statusBadge}">${statusText}</span>
+                        </div>
+                        <p class="small text-muted mt-1">${escapeHtml(issue.description?.substring(0, 100))}</p>
+                        ${issue.status !== 'resolved' ? `<button class="btn btn-sm btn-success resolve-btn" data-id="${issue.id}">Mark Resolved</button>` : ''}
+                    </div>
+                `;
+            });
+            document.getElementById('claimedIssues').innerHTML = claimedHtml;
+            document.querySelectorAll('.resolve-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const issueId = btn.dataset.id;
+                    const response = await fetch(`${BACKEND_URL}/issues/${issueId}/resolve`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    });
+                    if (response.ok) {
+                        loadData();
+                    } else {
+                        const err = await response.text();
+                        alert('Resolve failed: ' + err);
+                    }
+                });
+            });
+        }
+    }
+
+    function escapeHtml(str) { return str?.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]) || ''; }
+
+    // Navbar logic (login / logout)
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const loginNav = document.getElementById('loginNav');
+        const signupNav = document.getElementById('signupNav');
+        const userGreeting = document.getElementById('userGreetingNav');
+        const logoutNav = document.getElementById('logoutNav');
+        const logoutBtn = document.getElementById('logoutBtnHeader');
+        if (user) {
+            const { data: profile } = await supabaseClient.from('profiles').select('full_name').eq('id', user.id).single();
+            const fullName = profile?.full_name || 'User';
+            if (loginNav) loginNav.style.display = 'none';
+            if (signupNav) signupNav.style.display = 'none';
+            if (userGreeting) {
+                userGreeting.style.display = 'block';
+                const span = userGreeting.querySelector('.nav-link');
+                if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+            }
+            if (logoutNav) {
+                logoutNav.style.display = 'block';
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.auth.signOut();
+                        window.location.href = '/';
+                    });
+                }
+            }
+        } else {
+            if (loginNav) loginNav.style.display = 'block';
+            if (signupNav) signupNav.style.display = 'block';
+            if (userGreeting) userGreeting.style.display = 'none';
+            if (logoutNav) logoutNav.style.display = 'none';
+        }
+        await loadData();
+    });
+</script>
+</body>
+</html>

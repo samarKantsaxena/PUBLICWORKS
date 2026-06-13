@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About – PUBLICWORKS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; color: #1e2a3e; }
+        .hero-about { background: linear-gradient(135deg, #1e2a3e 0%, #0f172a 100%); color: white; padding: 4rem 0; margin-bottom: 2rem; }
+        .section-title { border-left: 5px solid #f39c12; padding-left: 1rem; margin: 2rem 0 1rem; }
+        .value-icon { font-size: 2rem; color: #f39c12; }
+        .footer { background: #1e2a3e; color: #cbd5e1; padding: 2rem 0; margin-top: 3rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">PUBLICWORKS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+    <li class="nav-item"><a class="nav-link" href="terms.html">Terms</a></li>
+    <!-- Dashboard link (visible only when logged in) -->
+    <li class="nav-item" id="dashboardNav" style="display: none;"><a id="dashboardLink" class="nav-link" href="#">Dashboard</a></li>
+    <li class="nav-item" id="loginNav"><a class="nav-link" href="login.html">Login</a></li>
+    <li class="nav-item" id="signupNav"><a class="nav-link" href="signup.html">Sign Up</a></li>
+    <li class="nav-item" id="userGreetingNav" style="display:none;"><span class="nav-link">👋</span></li>
+    <li class="nav-item" id="logoutNav" style="display:none;"><button id="logoutBtnHeader" class="btn btn-outline-danger btn-sm">Logout</button></li>
+</ul>
+        </div>
+    </div>
+</nav>
+
+<div class="hero-about text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">We Fix Neighbourhoods, Together</h1>
+        <p class="lead mt-3">PUBLICWORKS is a citizen‑led platform that transforms complaints into action.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="section-title">Our Story</h2>
+            <p>Every day, millions of people walk past broken streetlights, potholes that damage vehicles, garbage heaps that attract disease, and leaking pipes that waste precious water. They take a photo, post it on social media, and hope someone sees it. Usually, no one does. PUBLICWORKS was born to change that — to give every citizen a direct, transparent, and accountable channel to report civic issues and track them until they are fixed.</p>
+            
+            <p>What started as a small experiment in one neighbourhood quickly revealed a universal truth: people care deeply about their surroundings, but the systems to report problems are broken. Municipal helplines are understaffed, email complaints vanish, and WhatsApp messages get lost. PUBLICWORKS bridges that gap by combining simple reporting with AI-powered categorisation, real‑time maps, and a unique partnership with local NGOs and authorities who can claim issues and resolve them.</p>
+            
+            <h2 class="section-title">How It Works</h2>
+            <p>Citizens sign up for free, snap a photo of any civic issue, and pin the location on our map. Our AI automatically classifies the problem (pothole, garbage, drainage, etc.) and suggests a severity level. The issue appears on the public map for everyone to see, and community members can upvote issues that matter most to them. Meanwhile, registered NGOs and local government bodies can claim issues they are equipped to solve, update the status, and add comments. When the problem is fixed, the reporter gets a notification, and the “resolved” marker becomes a badge of progress.</p>
+            
+            <p>We also believe in radical transparency. Every issue has its own public page with a unique link — shareable on social media, email, or WhatsApp. This puts social pressure on responsible authorities and gives NGOs the visibility they deserve. Over time, PUBLICWORKS builds a powerful dataset of maintenance patterns, helping cities plan better and allocate resources where they are needed most.</p>
+            
+            <h2 class="section-title">Our Mission & Values</h2>
+            <div class="row text-center mt-4 g-4">
+                <div class="col-md-4">
+                    <i class="bi bi-people-fill value-icon"></i>
+                    <h5 class="mt-2">Citizen First</h5>
+                    <p class="small">Designed for everyone – from tech‑savvy youth to first‑time internet users.</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="bi bi-shield-check value-icon"></i>
+                    <h5 class="mt-2">Accountability</h5>
+                    <p class="small">Every issue is tracked from "reported" to "resolved". No hiding.</p>
+                </div>
+                <div class="col-md-4">
+                    <i class="bi bi-graph-up value-icon"></i>
+                    <h5 class="mt-2">Data for Good</h5>
+                    <p class="small">Anonymised trends are shared with urban planners to prevent recurring problems.</p>
+                </div>
+            </div>
+            
+            <h2 class="section-title">Why PUBLICWORKS?</h2>
+            <p>Unlike other reporting apps that stop at “submit”, PUBLICWORKS closes the loop. We don't just collect complaints – we actively facilitate resolution by connecting citizens with verified NGOs and authorities. Our AI helps prioritise urgent issues (e.g., a deep pothole on a school route vs. a faded zebra crossing). And because our platform is free and ad‑light, we remain focused on public welfare, not profit.</p>
+            
+            <p>Today, PUBLICWORKS is a community of thousands of citizens, dozens of NGOs, and a growing number of municipal partners. Every fixed pothole, every repaired light, every cleared drain is a small victory for collective action. We invite you to join us – report an issue, claim one as an NGO, or simply spread the word. Together, we can make public works truly work for the public.</p>
+            
+            <div class="alert alert-warning mt-4 text-center">
+                <i class="bi bi-globe"></i> <strong>Ready to start?</strong> <a href="signup.html" class="alert-link">Sign up as a citizen or NGO</a> – it's free and takes less than 2 minutes.
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer text-center">
+    <div class="container">
+        <p>PUBLICWORKS – Building accountable communities, one issue at a time.</p>
+        <p class="small"><a href="terms.html" class="text-light">Terms of Service</a> | <a href="about.html" class="text-light">About</a></p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://mdjcyvzkfkrhxklipvgr.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kamN5dnprZmtyaHhrbGlwdmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTk1MjIsImV4cCI6MjA5Njc3NTUyMn0.8xUaAJm5WQbhnqDasCiMUAg6vSOKoDTms9USSPcyklk";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const loginNav = document.getElementById('loginNav');
+    const signupNav = document.getElementById('signupNav');
+    const userGreeting = document.getElementById('userGreetingNav');
+    const logoutNav = document.getElementById('logoutNav');
+    const logoutBtn = document.getElementById('logoutBtnHeader');
+    const dashboardNav = document.getElementById('dashboardNav');
+    const dashboardLink = document.getElementById('dashboardLink');
+
+    if (user) {
+        // Fetch user profile (role and name)
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+        const fullName = profile?.full_name || 'User';
+        const role = profile?.role;
+
+        // Set dashboard link based on role
+        if (dashboardLink) {
+            if (role === 'citizen') {
+                dashboardLink.href = '/citizen/dashboard.html';
+            } else if (role === 'ngo') {
+                dashboardLink.href = '/ngo/dashboard.html';
+            }
+        }
+        if (dashboardNav) dashboardNav.style.display = 'block';
+
+        // Hide login/signup, show greeting and logout
+        if (loginNav) loginNav.style.display = 'none';
+        if (signupNav) signupNav.style.display = 'none';
+        if (userGreeting) {
+            userGreeting.style.display = 'block';
+            const span = userGreeting.querySelector('.nav-link');
+            if (span) span.innerHTML = `👋 Hello, ${fullName}`;
+        }
+        if (logoutNav) {
+            logoutNav.style.display = 'block';
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await supabaseClient.auth.signOut();
+                    window.location.href = '/';
+                });
+            }
+        }
+    } else {
+        // Not logged in: hide dashboard, show login/signup
+        if (dashboardNav) dashboardNav.style.display = 'none';
+        if (loginNav) loginNav.style.display = 'block';
+        if (signupNav) signupNav.style.display = 'block';
+        if (userGreeting) userGreeting.style.display = 'none';
+        if (logoutNav) logoutNav.style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>
